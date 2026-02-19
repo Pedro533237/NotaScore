@@ -74,8 +74,8 @@ LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         return 0;
     case WM_LBUTTONDOWN:
         if (view != nullptr) {
-            const auto x = GET_X_LPARAM(lParam);
-            const auto y = GET_Y_LPARAM(lParam);
+            const auto x = static_cast<int>(static_cast<short>(LOWORD(lParam)));
+            const auto y = static_cast<int>(static_cast<short>(HIWORD(lParam)));
             view->onClick(x, y);
             InvalidateRect(hwnd, nullptr, TRUE);
         }
