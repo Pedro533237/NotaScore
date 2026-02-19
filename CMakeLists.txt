@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(NOTASCORE_ENABLE_SIMD "Enable SIMD-friendly code paths" ON)
 option(NOTASCORE_ENABLE_OPENGL "Enable optional legacy OpenGL backend" OFF)
+option(NOTASCORE_ENABLE_QT "Enable optional Qt-based UI" ON)
 
 if(MSVC)
     add_compile_options(/W4 /permissive- /EHsc)
@@ -35,6 +36,7 @@ add_library(notascore_engine
     src/ui/PerformanceSettings.cpp
     src/ui/MainWindow.cpp
     src/platform/NativeWindow.cpp
+    src/ui/PreviewWidget.cpp
     src/app/Application.cpp
 )
 
@@ -54,6 +56,13 @@ else()
 endif()
 
 target_link_libraries(NotaScore PRIVATE notascore_engine)
+
+if(NOTASCORE_ENABLE_QT)
+    find_package(Qt6 REQUIRED COMPONENTS Widgets WebEngineWidgets OpenGLWidgets)
+    target_link_libraries(notascore_engine PUBLIC Qt6::Widgets Qt6::WebEngineWidgets Qt6::OpenGLWidgets)
+    target_compile_definitions(notascore_engine PUBLIC NOTASCORE_ENABLE_QT=1)
+    target_compile_definitions(NotaScore PUBLIC NOTASCORE_ENABLE_QT=1)
+endif()
 
 include(CTest)
 if(BUILD_TESTING)
