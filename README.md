@@ -1,43 +1,17 @@
 # NotaScore
 
-NotaScore é uma base profissional em **C++20** para um editor de notação musical orientado a:
+NotaScore é um editor de notação musical em **C++20**, desenhado para funcionar em hardware antigo com foco em execução por CPU e baixo consumo de RAM.
 
-- CPU-first rendering (funciona sem GPU dedicada)
-- Compatibilidade com hardware antigo (Intel i3 1ª geração, 4 GB RAM)
-- Arquitetura modular com baixo acoplamento
-- Foco em estabilidade, baixo uso de memória e evolução incremental
+## O que já funciona agora
 
-## Estado atual do projeto
-
-Este commit entrega a fundação técnica para evoluir o produto completo:
-
-- **Core**
-  - Thread pool leve
-  - Agendador com prioridade (Realtime / Interactive / Background)
-  - Heurística automática de perfil de hardware
-  - Preparação para `SIMD` via flags de build
-- **UI leve (CPU-first)**
-  - `MainWindow` inicial com desenho via `CpuRenderer`
-  - Menu de ações de performance:
-    - CPU Mode Only
-    - GPU Acceleration (optional)
-    - Disable animations
-    - Disable shadows
-    - Disable smooth zoom
-    - Low Memory Mode
-- **Render Engine (CPU-first)**
-  - Motor de renderização por CPU com dirty regions
-  - Renderização incremental (somente regiões marcadas)
-- **Motor de notação**
-  - Estrutura para notas e reflow lazy (`dirty flag`)
-  - Gancho para layout estilo TeX e colisão inteligente
-- **Motor de áudio**
-  - Configuração de buffer
-  - `Playback Lite` para hardware fraco
-  - Base para host VST3/LV2 em processo isolado
-- **Formato `.nsx`**
-  - Estrutura binária inicial (`NSX1`)
-  - Persistência e leitura com validação de assinatura
+- App desktop real com janela nativa no Linux/X11 (não abre mais só terminal).
+- Tela inicial no estilo dashboard (top bar, sidebar, área de scores, busca e barra inferior).
+- Card **New score** clicável: ao clicar, cria uma nova partitura no estado da UI e atualiza o status.
+- Núcleo de performance:
+  - Thread pool e scheduler por prioridade.
+  - Perfil de hardware para modo CPU-first.
+  - Base de render incremental/dirty regions.
+  - Formato inicial `.nsx` (`NSX1`).
 
 ## Build local
 
@@ -50,6 +24,9 @@ ctest --test-dir build --output-on-failure
 ./build/NotaScore
 ```
 
+> No Linux com ambiente gráfico/X11, o app abre uma janela nativa da interface.
+> Pressione qualquer tecla na janela para fechar.
+
 ### Windows (MSVC)
 
 ```powershell
@@ -58,41 +35,20 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Executável alvo: `NotaScore.exe`.
+Artefato alvo: `NotaScore.exe`.
 
-## Workflow CI (gera .exe e pacote Linux)
+## CI / Artefatos (.exe + pacote Linux)
 
-Foi adicionado workflow em `.github/workflows/build.yml` que:
+Workflow: `.github/workflows/build.yml`
 
-- **Linux**
-  - build + testes
-  - publica artefatos:
-    - `build/NotaScore`
-    - `AppDir` (base para AppImage)
-- **Windows**
-  - build + testes
-  - publica artefato:
-    - `build/Release/NotaScore.exe`
+- Linux: build + testes + upload de `NotaScore` e `AppDir`.
+- Windows: build + testes + upload de `NotaScore.exe`.
 
-### Gerar AppImage localmente
+## AppImage local
 
 ```bash
 ./packaging/linux/build_appimage.sh
 ```
 
-Se `appimagetool` estiver instalado, gera `NotaScore-x86_64.AppImage`.
-Se não estiver, prepara `AppDir/` pronto para empacotamento.
-
-## Roadmap de produto
-
-1. UI desktop completa (Qt Widgets ou Dear ImGui) com fallback automático CPU/GPU.
-2. Renderização vetorial SMuFL com cache de glyphs em atlas por CPU.
-3. Layout avançado (armaduras, quiálteras, polimetria, dinâmica/hairpins, percussão custom).
-4. Áudio profissional:
-   - VST3 no Windows
-   - LV2 no Linux
-   - SF2/SFZ com engine leve
-5. Formato `.nsx` com salvamento incremental, compactação opcional e crash recovery.
-6. Empacotamento:
-   - Windows Installer (NSIS/Inno)
-   - Linux AppImage e `.deb` opcional.
+- Se `appimagetool` existir, gera `NotaScore-x86_64.AppImage`.
+- Se não existir, deixa `AppDir/` pronto para você empacotar.

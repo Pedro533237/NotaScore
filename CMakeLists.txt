@@ -34,13 +34,25 @@ add_library(notascore_engine
     src/io/NsxDocument.cpp
     src/ui/PerformanceSettings.cpp
     src/ui/MainWindow.cpp
+    src/platform/NativeWindow.cpp
     src/app/Application.cpp
 )
 
 target_include_directories(notascore_engine PUBLIC include)
 target_link_libraries(notascore_engine PUBLIC notascore_core)
 
-add_executable(NotaScore src/main.cpp)
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    target_include_directories(notascore_engine PRIVATE ${X11_INCLUDE_DIR})
+    target_link_libraries(notascore_engine PUBLIC ${X11_LIBRARIES})
+endif()
+
+if(WIN32)
+    add_executable(NotaScore WIN32 src/main.cpp)
+else()
+    add_executable(NotaScore src/main.cpp)
+endif()
+
 target_link_libraries(NotaScore PRIVATE notascore_engine)
 
 include(CTest)

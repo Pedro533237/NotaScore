@@ -7,16 +7,20 @@ MainWindow::MainWindow(int width, int height, PerformanceSettings settings)
     rebuildActions();
 }
 
-void MainWindow::draw(notascore::render::CpuRenderer& renderer) {
-    renderer.markDirty({.x = 0, .y = 0, .width = m_width, .height = 64});
-    renderer.markDirty({.x = 0, .y = 64, .width = m_width / 3, .height = m_height - 64});
-    renderer.renderFrame();
+void MainWindow::resize(int width, int height) noexcept {
+    m_width = width;
+    m_height = height;
 }
 
-void MainWindow::toggleLowMemoryMode() {
-    m_settings.lowMemoryMode = !m_settings.lowMemoryMode;
-    m_settings.audioBufferFrames = m_settings.lowMemoryMode ? 512u : 256u;
-    rebuildActions();
+Rect MainWindow::newScoreCardRect() const noexcept {
+    return {.x = 220, .y = 140, .width = 180, .height = 220};
+}
+
+void MainWindow::onClick(int x, int y) {
+    if (newScoreCardRect().contains(x, y)) {
+        ++m_scoreCount;
+        m_statusText = "New score created (#" + std::to_string(m_scoreCount) + ")";
+    }
 }
 
 void MainWindow::rebuildActions() {
