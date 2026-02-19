@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/ui/MainWindow.hpp"
 #include "notascore/ui/InstrumentModel.hpp"
 #include "notascore/ui/PreviewWidget.hpp"
@@ -24,3 +26,5 @@ private:
 };
 
 } // namespace notascore::ui
+
+#endif // NOTASCORE_ENABLE_QT

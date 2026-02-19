@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(NOTASCORE_ENABLE_SIMD "Enable SIMD-friendly code paths" ON)
 option(NOTASCORE_ENABLE_OPENGL "Enable optional legacy OpenGL backend" OFF)
-option(NOTASCORE_ENABLE_QT "Enable optional Qt-based UI" ON)
+option(NOTASCORE_ENABLE_QT "Enable optional Qt-based UI" OFF)
 
 if(MSVC)
     add_compile_options(/W4 /permissive- /EHsc)

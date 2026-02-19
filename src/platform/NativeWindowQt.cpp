@@ -1,3 +1,5 @@
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/platform/NativeWindow.hpp"
 
 #include <QApplication>
@@ -81,3 +83,5 @@ int NativeWindow::run() {
 }
 
 } // namespace notascore::platform
+
+#endif // NOTASCORE_ENABLE_QT

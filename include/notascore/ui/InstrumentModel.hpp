@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/ui/MainWindow.hpp"
 #include <QAbstractListModel>
 #include <vector>
@@ -35,3 +37,5 @@ private:
 };
 
 } // namespace notascore::ui
+
+#endif // NOTASCORE_ENABLE_QT

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef NOTASCORE_ENABLE_QT
+
 #include <QOpenGLWidget>
 
 namespace notascore::ui {
@@ -15,3 +17,5 @@ protected:
 };
 
 } // namespace notascore::ui
+
+#endif // NOTASCORE_ENABLE_QT

@@ -1,3 +1,5 @@
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/ui/PreviewWidget.hpp"
 
 #include <QPainter>
@@ -26,3 +28,5 @@ void PreviewWidget::paintGL() {
 }
 
 } // namespace notascore::ui
+
+#endif // NOTASCORE_ENABLE_QT

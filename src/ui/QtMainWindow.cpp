@@ -1,3 +1,5 @@
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/ui/QtMainWindow.hpp"
 
 #include <QHBoxLayout>
@@ -195,3 +197,5 @@ void QtMainWindow::refresh() {
 }
 
 } // namespace notascore::ui
+
+#endif // NOTASCORE_ENABLE_QT
