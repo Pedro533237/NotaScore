@@ -4,6 +4,7 @@
 #include "notascore/core/TaskScheduler.hpp"
 #include "notascore/notation/NotationEngine.hpp"
 #include "notascore/render/CpuRenderer.hpp"
+#include "notascore/ui/MainWindow.hpp"
 #include "notascore/ui/PerformanceSettings.hpp"
 
 namespace notascore::app {
@@ -19,6 +20,7 @@ private:
     notascore::notation::NotationEngine m_notation;
     notascore::audio::AudioEngine m_audio;
     notascore::ui::PerformanceSettings m_settings;
+    notascore::ui::MainWindow m_mainWindow;
 };
 
 } // namespace notascore::app

@@ -1,0 +1,48 @@
+name: Build NotaScore
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build -j4
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Prepare AppDir
+        run: |
+          mkdir -p AppDir/usr/bin AppDir/usr/share/applications
+          cp build/NotaScore AppDir/usr/bin/NotaScore
+          cp packaging/linux/notascore.desktop AppDir/usr/share/applications/notascore.desktop
+          cp packaging/linux/AppRun AppDir/AppRun
+          chmod +x AppDir/AppRun
+      - name: Upload Linux binary + AppDir
+        uses: actions/upload-artifact@v4
+        with:
+          name: notascore-linux
+          path: |
+            build/NotaScore
+            AppDir
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+      - name: Build Release
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Upload .exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: notascore-windows-exe
+          path: build/Release/NotaScore.exe

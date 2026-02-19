@@ -33,6 +33,7 @@ add_library(notascore_engine
     src/audio/AudioEngine.cpp
     src/io/NsxDocument.cpp
     src/ui/PerformanceSettings.cpp
+    src/ui/MainWindow.cpp
     src/app/Application.cpp
 )
 

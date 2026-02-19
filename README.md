@@ -16,6 +16,15 @@ Este commit entrega a fundação técnica para evoluir o produto completo:
   - Agendador com prioridade (Realtime / Interactive / Background)
   - Heurística automática de perfil de hardware
   - Preparação para `SIMD` via flags de build
+- **UI leve (CPU-first)**
+  - `MainWindow` inicial com desenho via `CpuRenderer`
+  - Menu de ações de performance:
+    - CPU Mode Only
+    - GPU Acceleration (optional)
+    - Disable animations
+    - Disable shadows
+    - Disable smooth zoom
+    - Low Memory Mode
 - **Render Engine (CPU-first)**
   - Motor de renderização por CPU com dirty regions
   - Renderização incremental (somente regiões marcadas)
@@ -29,14 +38,8 @@ Este commit entrega a fundação técnica para evoluir o produto completo:
 - **Formato `.nsx`**
   - Estrutura binária inicial (`NSX1`)
   - Persistência e leitura com validação de assinatura
-- **Configurações de performance**
-  - `CPU Mode Only`
-  - `GPU Acceleration (optional)`
-  - `Audio buffer size`
-  - `Disable animations / shadows / smooth zoom`
-  - `Low Memory Mode`
 
-## Build
+## Build local
 
 ### Linux
 
@@ -57,9 +60,32 @@ ctest --test-dir build -C Release --output-on-failure
 
 Executável alvo: `NotaScore.exe`.
 
+## Workflow CI (gera .exe e pacote Linux)
+
+Foi adicionado workflow em `.github/workflows/build.yml` que:
+
+- **Linux**
+  - build + testes
+  - publica artefatos:
+    - `build/NotaScore`
+    - `AppDir` (base para AppImage)
+- **Windows**
+  - build + testes
+  - publica artefato:
+    - `build/Release/NotaScore.exe`
+
+### Gerar AppImage localmente
+
+```bash
+./packaging/linux/build_appimage.sh
+```
+
+Se `appimagetool` estiver instalado, gera `NotaScore-x86_64.AppImage`.
+Se não estiver, prepara `AppDir/` pronto para empacotamento.
+
 ## Roadmap de produto
 
-1. UI desktop (Qt Widgets ou Dear ImGui) com fallback automático CPU/GPU.
+1. UI desktop completa (Qt Widgets ou Dear ImGui) com fallback automático CPU/GPU.
 2. Renderização vetorial SMuFL com cache de glyphs em atlas por CPU.
 3. Layout avançado (armaduras, quiálteras, polimetria, dinâmica/hairpins, percussão custom).
 4. Áudio profissional:
