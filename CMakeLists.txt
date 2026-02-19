@@ -47,11 +47,7 @@ if(UNIX AND NOT APPLE)
     target_link_libraries(notascore_engine PUBLIC ${X11_LIBRARIES})
 endif()
 
-if(WIN32)
-    add_executable(NotaScore WIN32 src/main.cpp)
-else()
-    add_executable(NotaScore src/main.cpp)
-endif()
+add_executable(NotaScore src/main.cpp)
 
 target_link_libraries(NotaScore PRIVATE notascore_engine)
 
