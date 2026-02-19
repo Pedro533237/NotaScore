@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=NotaScore
+Exec=NotaScore
+Icon=notascore
+Categories=AudioVideo;Audio;Music;
+Terminal=false
