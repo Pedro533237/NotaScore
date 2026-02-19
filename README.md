@@ -4,7 +4,9 @@ NotaScore é um editor de notação musical em **C++20**, desenhado para funcion
 
 ## O que já funciona agora
 
-- App desktop real com janela nativa no Linux/X11 (não abre mais só terminal).
+- App desktop real com janela nativa:
+  - **Windows (Win32/GDI)**: abre como app gráfico (sem console).
+  - **Linux/X11**: abre janela nativa.
 - Tela inicial no estilo dashboard (top bar, sidebar, área de scores, busca e barra inferior).
 - Card **New score** clicável: ao clicar, cria uma nova partitura no estado da UI e atualiza o status.
 - Núcleo de performance:
@@ -25,7 +27,6 @@ ctest --test-dir build --output-on-failure
 ```
 
 > No Linux com ambiente gráfico/X11, o app abre uma janela nativa da interface.
-> Pressione qualquer tecla na janela para fechar.
 
 ### Windows (MSVC)
 
@@ -35,7 +36,7 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Artefato alvo: `NotaScore.exe`.
+Artefato alvo: `NotaScore.exe` (subsystem GUI, com `WinMain` dedicado).
 
 ## CI / Artefatos (.exe + pacote Linux)
 
