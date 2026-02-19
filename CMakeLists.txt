@@ -36,6 +36,7 @@ add_library(notascore_engine
     src/ui/PerformanceSettings.cpp
     src/ui/MainWindow.cpp
     src/platform/NativeWindow.cpp
+    $<$<BOOL:${NOTASCORE_ENABLE_QT}>:src/platform/NativeWindowQt.cpp>
     src/ui/PreviewWidget.cpp
     src/app/Application.cpp
 )
@@ -58,8 +59,16 @@ endif()
 target_link_libraries(NotaScore PRIVATE notascore_engine)
 
 if(NOTASCORE_ENABLE_QT)
-    find_package(Qt6 REQUIRED COMPONENTS Widgets WebEngineWidgets OpenGLWidgets)
-    target_link_libraries(notascore_engine PUBLIC Qt6::Widgets Qt6::WebEngineWidgets Qt6::OpenGLWidgets)
+    find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
+    # WebEngineWidgets is optional (heavy). Try to find it, but continue if missing.
+    find_package(Qt6 QUIET COMPONENTS WebEngineWidgets)
+    target_link_libraries(notascore_engine PUBLIC Qt6::Widgets Qt6::OpenGLWidgets)
+    if(TARGET Qt6::WebEngineWidgets)
+        target_link_libraries(notascore_engine PUBLIC Qt6::WebEngineWidgets)
+        target_compile_definitions(notascore_engine PUBLIC NOTASCORE_QT_WEBENGINE=1)
+    else()
+        message(STATUS "Qt6::WebEngineWidgets not found; continuing without WebEngine support.")
+    endif()
     target_compile_definitions(notascore_engine PUBLIC NOTASCORE_ENABLE_QT=1)
     target_compile_definitions(NotaScore PUBLIC NOTASCORE_ENABLE_QT=1)
 endif()
