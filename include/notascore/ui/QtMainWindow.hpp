@@ -18,6 +18,8 @@ public:
     void refresh();
 
 private:
+    void loadModernStylesheet();
+
     notascore::ui::MainWindow& m_view;
     InstrumentModel* m_instrumentModel;
     PreviewWidget* m_preview;
