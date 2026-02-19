@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/ui/Theme.hpp"
 
 #include <QWidget>
@@ -189,3 +191,5 @@ private:
 };
 
 } // namespace notascore::ui
+
+#endif // NOTASCORE_ENABLE_QT

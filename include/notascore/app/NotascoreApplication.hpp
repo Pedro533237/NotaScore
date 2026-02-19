@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef NOTASCORE_ENABLE_QT
+
 /**
  * @file NotascoreApplicationExample.hpp
  * 
@@ -152,3 +154,5 @@ private:
  * 
  * ============================================================================
  */
+
+#endif // NOTASCORE_ENABLE_QT

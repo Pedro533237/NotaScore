@@ -5,6 +5,8 @@
 #include <QMouseEvent>
 #include <QIcon>
 #include <QFontMetrics>
+#include <QApplication>
+#include <QWidget>
 
 namespace notascore::ui {
 

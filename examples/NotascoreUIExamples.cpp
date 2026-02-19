@@ -4,6 +4,8 @@
  * Exemplos de código mostrando como usar a interface moderna do NotaScore.
  */
 
+#ifdef NOTASCORE_ENABLE_QT
+
 #include "notascore/ui/Theme.hpp"
 #include "notascore/ui/ModernWidgets.hpp"
 #include "notascore/ui/QtMainWindow.hpp"
@@ -336,3 +338,5 @@ void example_full_notascore_integration() {
  * 3. Rodar:
  *    ./build/example_ui
  */
+
+#endif // NOTASCORE_ENABLE_QT

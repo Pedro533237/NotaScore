@@ -35,8 +35,8 @@ add_library(notascore_engine
     src/io/NsxDocument.cpp
     src/ui/PerformanceSettings.cpp
     src/ui/MainWindow.cpp
-    src/ui/Theme.cpp
-    src/ui/ModernWidgets.cpp
+    $<$<BOOL:${NOTASCORE_ENABLE_QT}>:src/ui/Theme.cpp>
+    $<$<BOOL:${NOTASCORE_ENABLE_QT}>:src/ui/ModernWidgets.cpp>
     src/platform/NativeWindow.cpp
     $<$<BOOL:${NOTASCORE_ENABLE_QT}>:src/platform/NativeWindowQt.cpp>
     $<$<BOOL:${NOTASCORE_ENABLE_QT}>:src/ui/QtMainWindow.cpp>
