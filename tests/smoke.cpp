@@ -25,8 +25,12 @@ int main() {
         {.cpuModel = "legacy", .ramMb = 4096, .hasDedicatedGpu = false, .legacyOpenGLOnly = true});
 
     notascore::ui::MainWindow mainWindow(1280, 720, settings);
-    const auto card = mainWindow.newScoreCardRect();
-    mainWindow.onClick(card.x + 10, card.y + 10);
+    const auto newScore = mainWindow.newScoreCardRect();
+    mainWindow.onClick(newScore.x + 12, newScore.y + 12);
+
+    mainWindow.onClick(mainWindow.instrumentAddRect(0).x + 3, mainWindow.instrumentAddRect(0).y + 3);
+    mainWindow.onClick(mainWindow.assistantNextRect().x + 6, mainWindow.assistantNextRect().y + 6);
+    mainWindow.onClick(mainWindow.assistantNextRect().x + 6, mainWindow.assistantNextRect().y + 6);
 
     std::filesystem::remove(path);
 

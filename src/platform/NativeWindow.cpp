@@ -1,5 +1,6 @@
 #include "notascore/platform/NativeWindow.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -13,48 +14,136 @@ COLORREF rgb(unsigned char r, unsigned char g, unsigned char b) {
     return RGB(r, g, b);
 }
 
-void fillRect(HDC hdc, int x, int y, int width, int height, COLORREF color) {
-    RECT rect {x, y, x + width, y + height};
+void fillRect(HDC hdc, const notascore::ui::Rect& rect, COLORREF color) {
+    RECT nativeRect {rect.x, rect.y, rect.x + rect.width, rect.y + rect.height};
     HBRUSH brush = CreateSolidBrush(color);
-    FillRect(hdc, &rect, brush);
+    FillRect(hdc, &nativeRect, brush);
     DeleteObject(brush);
 }
 
-void drawText(HDC hdc, int x, int y, COLORREF color, const char* text) {
-    SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, color);
-    TextOutA(hdc, x, y, text, lstrlenA(text));
+void fillRoundedRect(HDC hdc, const notascore::ui::Rect& rect, COLORREF color, int radius) {
+    HBRUSH brush = CreateSolidBrush(color);
+    HPEN pen = CreatePen(PS_SOLID, 1, color);
+    const auto oldBrush = SelectObject(hdc, brush);
+    const auto oldPen = SelectObject(hdc, pen);
+    RoundRect(hdc, rect.x, rect.y, rect.x + rect.width, rect.y + rect.height, radius, radius);
+    SelectObject(hdc, oldPen);
+    SelectObject(hdc, oldBrush);
+    DeleteObject(pen);
+    DeleteObject(brush);
 }
 
-void drawUi(HDC hdc, const notascore::ui::MainWindow& view) {
+void drawText(HDC hdc, int x, int y, COLORREF color, const std::string& text) {
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, color);
+    TextOutA(hdc, x, y, text.c_str(), static_cast<int>(text.size()));
+}
+
+void drawMainHome(HDC hdc, const notascore::ui::MainWindow& view) {
     const auto width = view.width();
     const auto height = view.height();
 
-    fillRect(hdc, 0, 0, width, height, rgb(43, 45, 50));
-    fillRect(hdc, 0, 0, width, 38, rgb(35, 36, 40));
-    fillRect(hdc, 0, 38, 220, height - 38, rgb(38, 39, 44));
-    fillRect(hdc, 0, 118, 220, 44, rgb(26, 71, 106));
+    fillRect(hdc, {0, 0, width, height}, rgb(243, 243, 243));
+    fillRect(hdc, {0, 0, width, 54}, rgb(255, 255, 255));
+    fillRect(hdc, {0, 54, 210, height - 54}, rgb(255, 255, 255));
 
-    drawText(hdc, 16, 10, rgb(230, 230, 230), "Home    Score    Publish    DevTools");
-    drawText(hdc, 18, 84, rgb(220, 220, 220), "My account");
-    drawText(hdc, 18, 134, rgb(235, 235, 235), "Scores");
-    drawText(hdc, 240, 72, rgb(240, 240, 240), "Scores");
-    drawText(hdc, 240, 112, rgb(220, 220, 220), "New & recent");
+    drawText(hdc, 20, 18, rgb(26, 26, 26), "NotaScore");
+    drawText(hdc, 160, 18, rgb(26, 26, 26), "Arquivo  Editar  Preferencias  Ajuda");
+
+    fillRect(hdc, {0, 53, width, 1}, rgb(224, 224, 224));
+    fillRect(hdc, {209, 54, 1, height - 54}, rgb(224, 224, 224));
+    drawText(hdc, 24, 90, rgb(26, 26, 26), "Home");
+    drawText(hdc, 24, 124, rgb(80, 80, 80), "Projetos");
 
     const auto card = view.newScoreCardRect();
-    fillRect(hdc, card.x, card.y, card.width, card.height, rgb(218, 218, 218));
-    drawText(hdc, card.x + 82, card.y + 100, rgb(20, 20, 20), "+");
-    drawText(hdc, card.x + 44, card.y + card.height + 20, rgb(220, 220, 220), "New score");
+    fillRoundedRect(hdc, card, rgb(37, 99, 235), 12);
+    drawText(hdc, card.x + 56, card.y + 62, rgb(245, 245, 245), "Nova Partitura");
 
-    fillRect(hdc, width - 280, 52, 220, 32, rgb(28, 30, 35));
-    drawText(hdc, width - 260, 60, rgb(130, 136, 145), "Search");
+    fillRoundedRect(hdc, view.openProjectRect(), rgb(255, 255, 255), 10);
+    fillRoundedRect(hdc, view.importMidiRect(), rgb(255, 255, 255), 10);
+    fillRoundedRect(hdc, view.importMusicXmlRect(), rgb(255, 255, 255), 10);
+    drawText(hdc, view.openProjectRect().x + 12, view.openProjectRect().y + 10, rgb(26, 26, 26), "Abrir Projeto");
+    drawText(hdc, view.importMidiRect().x + 12, view.importMidiRect().y + 10, rgb(26, 26, 26), "Importar MIDI");
+    drawText(hdc, view.importMusicXmlRect().x + 12, view.importMusicXmlRect().y + 10, rgb(26, 26, 26), "Importar MusicXML");
 
-    fillRect(hdc, 0, height - 74, width, 74, rgb(48, 50, 57));
-    drawText(hdc, width - 300, height - 42, rgb(235, 235, 235), "New");
-    drawText(hdc, width - 180, height - 42, rgb(235, 235, 235), "Open other...");
+    drawText(hdc, 560, 106, rgb(26, 26, 26), "Projetos Recentes");
+    int y = 136;
+    for (const auto& item : view.recentProjects()) {
+        fillRoundedRect(hdc, {560, y, 290, 32}, rgb(255, 255, 255), 8);
+        drawText(hdc, 574, y + 9, rgb(26, 26, 26), item);
+        y += 40;
+        if (y > 300) {
+            break;
+        }
+    }
+}
 
-    const auto status = "Status: " + view.statusText();
-    drawText(hdc, 20, height - 42, rgb(220, 220, 220), status.c_str());
+void drawWizardPanel(HDC hdc, const notascore::ui::MainWindow& view) {
+    const auto panel = view.assistantPanelRect();
+    fillRect(hdc, panel, rgb(255, 255, 255));
+    fillRect(hdc, {panel.x, 0, 1, panel.height}, rgb(224, 224, 224));
+
+    drawText(hdc, panel.x + 24, 26, rgb(26, 26, 26), "Nova Partitura");
+    const auto stepName = view.wizardStep() == notascore::ui::WizardStep::Instruments ? "1. Instrumentos" : "2. Configuracoes";
+    drawText(hdc, panel.x + 24, 52, rgb(80, 80, 80), stepName);
+
+    if (view.wizardStep() == notascore::ui::WizardStep::Instruments) {
+        drawText(hdc, panel.x + 24, 84, rgb(26, 26, 26), "Biblioteca");
+        drawText(hdc, panel.x + 216, 84, rgb(26, 26, 26), "Selecionados");
+
+        const std::size_t visible = std::min<std::size_t>(6, view.instrumentLibrary().size());
+        for (std::size_t i = 0; i < visible; ++i) {
+            const int y = 110 + static_cast<int>(i) * 34;
+            const auto& inst = view.instrumentLibrary()[i];
+            drawText(hdc, panel.x + 24, y, rgb(26, 26, 26), inst.name);
+            drawText(hdc, panel.x + 90, y, rgb(110, 110, 110), inst.range);
+            fillRoundedRect(hdc, view.instrumentAddRect(i), rgb(229, 240, 255), 8);
+            drawText(hdc, view.instrumentAddRect(i).x + 6, view.instrumentAddRect(i).y + 2, rgb(37, 99, 235), "+");
+        }
+
+        for (std::size_t i = 0; i < view.selectedInstruments().size(); ++i) {
+            const int y = 110 + static_cast<int>(i) * 30;
+            drawText(hdc, panel.x + 216, y, rgb(26, 26, 26), view.selectedInstruments()[i].name);
+            fillRoundedRect(hdc, view.selectedInstrumentRemoveRect(i), rgb(255, 243, 243), 6);
+            drawText(hdc, view.selectedInstrumentRemoveRect(i).x + 4, view.selectedInstrumentRemoveRect(i).y - 1, rgb(180, 40, 40), "x");
+        }
+    } else {
+        drawText(hdc, panel.x + 24, 94, rgb(26, 26, 26), "Armadura");
+        drawText(hdc, panel.x + 24, 154, rgb(26, 26, 26), "Compasso");
+        drawText(hdc, panel.x + 24, 214, rgb(26, 26, 26), "Andamento");
+        drawText(hdc, panel.x + 24, 274, rgb(26, 26, 26), "Titulo");
+        drawText(hdc, panel.x + 24, 334, rgb(26, 26, 26), "Compositor");
+
+        fillRoundedRect(hdc, view.keySignatureRect(), rgb(243, 243, 243), 8);
+        fillRoundedRect(hdc, view.meterRect(), rgb(243, 243, 243), 8);
+        fillRoundedRect(hdc, view.tempoRect(), rgb(243, 243, 243), 8);
+        fillRoundedRect(hdc, view.titleRect(), rgb(243, 243, 243), 8);
+        fillRoundedRect(hdc, view.composerRect(), rgb(243, 243, 243), 8);
+
+        drawText(hdc, view.keySignatureRect().x + 12, view.keySignatureRect().y + 12, rgb(26, 26, 26), view.keySignature());
+        drawText(hdc, view.meterRect().x + 12, view.meterRect().y + 12, rgb(26, 26, 26), view.meter());
+        drawText(hdc, view.tempoRect().x + 12, view.tempoRect().y + 12, rgb(26, 26, 26), std::to_string(view.bpm()) + " BPM");
+        drawText(hdc, view.titleRect().x + 12, view.titleRect().y + 12, rgb(26, 26, 26), view.title());
+        drawText(hdc, view.composerRect().x + 12, view.composerRect().y + 12, rgb(26, 26, 26), view.composer());
+    }
+
+    fillRoundedRect(hdc, view.compatibilityToggleRect(), view.compatibilityMode() ? rgb(37, 99, 235) : rgb(243, 243, 243), 6);
+    fillRoundedRect(hdc, view.livePreviewToggleRect(), view.livePreviewEnabled() ? rgb(37, 99, 235) : rgb(243, 243, 243), 6);
+    drawText(hdc, view.compatibilityToggleRect().x + 32, view.compatibilityToggleRect().y + 2, rgb(26, 26, 26), "Modo Compatibilidade");
+    drawText(hdc, view.livePreviewToggleRect().x + 32, view.livePreviewToggleRect().y + 2, rgb(26, 26, 26), "Preview ao vivo");
+
+    fillRoundedRect(hdc, view.assistantBackRect(), rgb(243, 243, 243), 8);
+    fillRoundedRect(hdc, view.assistantNextRect(), rgb(37, 99, 235), 8);
+    drawText(hdc, view.assistantBackRect().x + 32, view.assistantBackRect().y + 10, rgb(26, 26, 26), "Voltar");
+    drawText(hdc, view.assistantNextRect().x + 34, view.assistantNextRect().y + 10, rgb(245, 245, 245), "Proximo");
+}
+
+void drawUi(HDC hdc, const notascore::ui::MainWindow& view) {
+    drawMainHome(hdc, view);
+    if (view.wizardOpen()) {
+        drawWizardPanel(hdc, view);
+    }
+    drawText(hdc, 20, view.height() - 30, rgb(80, 80, 80), "Status: " + view.statusText());
 }
 
 LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -111,49 +200,111 @@ unsigned long rgb(unsigned char r, unsigned char g, unsigned char b) {
     return (static_cast<unsigned long>(r) << 16U) | (static_cast<unsigned long>(g) << 8U) | static_cast<unsigned long>(b);
 }
 
-void drawRect(Display* d, Window w, GC gc, int x, int y, int width, int height, unsigned long color, bool fill = true) {
+void drawRect(Display* d, Window w, GC gc, const notascore::ui::Rect& rect, unsigned long color) {
     XSetForeground(d, gc, color);
-    if (fill) {
-        XFillRectangle(d, w, gc, x, y, static_cast<unsigned int>(width), static_cast<unsigned int>(height));
-    } else {
-        XDrawRectangle(d, w, gc, x, y, static_cast<unsigned int>(width), static_cast<unsigned int>(height));
-    }
+    XFillRectangle(d, w, gc, rect.x, rect.y, static_cast<unsigned int>(rect.width), static_cast<unsigned int>(rect.height));
 }
 
-void drawText(Display* d, Window w, GC gc, int x, int y, unsigned long color, const char* text) {
+void drawText(Display* d, Window w, GC gc, int x, int y, unsigned long color, const std::string& text) {
     XSetForeground(d, gc, color);
-    XDrawString(d, w, gc, x, y, text, static_cast<int>(std::char_traits<char>::length(text)));
+    XDrawString(d, w, gc, x, y, text.c_str(), static_cast<int>(text.size()));
 }
 
-void drawUi(Display* d, Window w, GC gc, const notascore::ui::MainWindow& view) {
+void drawMainHome(Display* d, Window w, GC gc, const notascore::ui::MainWindow& view) {
     const auto width = view.width();
     const auto height = view.height();
 
-    drawRect(d, w, gc, 0, 0, width, height, rgb(43, 45, 50));
-    drawRect(d, w, gc, 0, 0, width, 38, rgb(35, 36, 40));
-    drawRect(d, w, gc, 0, 38, 220, height - 38, rgb(38, 39, 44));
-    drawRect(d, w, gc, 0, 118, 220, 44, rgb(26, 71, 106));
+    drawRect(d, w, gc, {0, 0, width, height}, rgb(243, 243, 243));
+    drawRect(d, w, gc, {0, 0, width, 54}, rgb(255, 255, 255));
+    drawRect(d, w, gc, {0, 54, 210, height - 54}, rgb(255, 255, 255));
+    drawRect(d, w, gc, {0, 53, width, 1}, rgb(224, 224, 224));
+    drawRect(d, w, gc, {209, 54, 1, height - 54}, rgb(224, 224, 224));
 
-    drawText(d, w, gc, 16, 25, rgb(230, 230, 230), "Home   Score   Publish   DevTools");
-    drawText(d, w, gc, 18, 96, rgb(220, 220, 220), "My account");
-    drawText(d, w, gc, 18, 145, rgb(235, 235, 235), "Scores");
-    drawText(d, w, gc, 240, 90, rgb(240, 240, 240), "Scores");
-    drawText(d, w, gc, 240, 130, rgb(220, 220, 220), "New & recent");
+    drawText(d, w, gc, 20, 30, rgb(26, 26, 26), "NotaScore");
+    drawText(d, w, gc, 160, 30, rgb(26, 26, 26), "Arquivo  Editar  Preferencias  Ajuda");
+    drawText(d, w, gc, 24, 90, rgb(26, 26, 26), "Home");
 
-    const auto card = view.newScoreCardRect();
-    drawRect(d, w, gc, card.x, card.y, card.width, card.height, rgb(218, 218, 218));
-    drawText(d, w, gc, card.x + 78, card.y + 118, rgb(20, 20, 20), "+");
-    drawText(d, w, gc, card.x + 44, card.y + card.height + 24, rgb(220, 220, 220), "New score");
+    drawRect(d, w, gc, view.newScoreCardRect(), rgb(37, 99, 235));
+    drawText(d, w, gc, view.newScoreCardRect().x + 56, view.newScoreCardRect().y + 94, rgb(245, 245, 245), "Nova Partitura");
 
-    drawRect(d, w, gc, width - 280, 52, 220, 32, rgb(28, 30, 35));
-    drawText(d, w, gc, width - 264, 73, rgb(130, 136, 145), "Search");
+    drawRect(d, w, gc, view.openProjectRect(), rgb(255, 255, 255));
+    drawRect(d, w, gc, view.importMidiRect(), rgb(255, 255, 255));
+    drawRect(d, w, gc, view.importMusicXmlRect(), rgb(255, 255, 255));
+    drawText(d, w, gc, view.openProjectRect().x + 12, view.openProjectRect().y + 24, rgb(26, 26, 26), "Abrir Projeto");
+    drawText(d, w, gc, view.importMidiRect().x + 12, view.importMidiRect().y + 24, rgb(26, 26, 26), "Importar MIDI");
+    drawText(d, w, gc, view.importMusicXmlRect().x + 12, view.importMusicXmlRect().y + 24, rgb(26, 26, 26), "Importar MusicXML");
 
-    drawRect(d, w, gc, 0, height - 74, width, 74, rgb(48, 50, 57));
-    drawText(d, w, gc, width - 300, height - 28, rgb(235, 235, 235), "New");
-    drawText(d, w, gc, width - 180, height - 28, rgb(235, 235, 235), "Open other...");
+    drawText(d, w, gc, 560, 106, rgb(26, 26, 26), "Projetos Recentes");
+    int y = 140;
+    for (const auto& item : view.recentProjects()) {
+        drawRect(d, w, gc, {560, y, 290, 28}, rgb(255, 255, 255));
+        drawText(d, w, gc, 574, y + 19, rgb(26, 26, 26), item);
+        y += 36;
+        if (y > 300) {
+            break;
+        }
+    }
+}
 
-    const auto status = "Status: " + view.statusText();
-    drawText(d, w, gc, 20, height - 28, rgb(220, 220, 220), status.c_str());
+void drawWizardPanel(Display* d, Window w, GC gc, const notascore::ui::MainWindow& view) {
+    const auto panel = view.assistantPanelRect();
+    drawRect(d, w, gc, panel, rgb(255, 255, 255));
+    drawRect(d, w, gc, {panel.x, 0, 1, panel.height}, rgb(224, 224, 224));
+
+    drawText(d, w, gc, panel.x + 24, 30, rgb(26, 26, 26), "Nova Partitura");
+
+    if (view.wizardStep() == notascore::ui::WizardStep::Instruments) {
+        drawText(d, w, gc, panel.x + 24, 54, rgb(80, 80, 80), "1. Instrumentos");
+        drawText(d, w, gc, panel.x + 24, 86, rgb(26, 26, 26), "Biblioteca");
+        drawText(d, w, gc, panel.x + 216, 86, rgb(26, 26, 26), "Selecionados");
+
+        const std::size_t visible = std::min<std::size_t>(6, view.instrumentLibrary().size());
+        for (std::size_t i = 0; i < visible; ++i) {
+            const int y = 110 + static_cast<int>(i) * 34;
+            const auto& inst = view.instrumentLibrary()[i];
+            drawText(d, w, gc, panel.x + 24, y, rgb(26, 26, 26), inst.name);
+            drawText(d, w, gc, panel.x + 90, y, rgb(110, 110, 110), inst.range);
+            drawRect(d, w, gc, view.instrumentAddRect(i), rgb(229, 240, 255));
+            drawText(d, w, gc, view.instrumentAddRect(i).x + 6, view.instrumentAddRect(i).y + 14, rgb(37, 99, 235), "+");
+        }
+
+        for (std::size_t i = 0; i < view.selectedInstruments().size(); ++i) {
+            const int y = 110 + static_cast<int>(i) * 30;
+            drawText(d, w, gc, panel.x + 216, y, rgb(26, 26, 26), view.selectedInstruments()[i].name);
+            drawRect(d, w, gc, view.selectedInstrumentRemoveRect(i), rgb(255, 243, 243));
+            drawText(d, w, gc, view.selectedInstrumentRemoveRect(i).x + 4, view.selectedInstrumentRemoveRect(i).y + 12, rgb(180, 40, 40), "x");
+        }
+    } else {
+        drawText(d, w, gc, panel.x + 24, 54, rgb(80, 80, 80), "2. Configuracoes");
+        drawRect(d, w, gc, view.keySignatureRect(), rgb(243, 243, 243));
+        drawRect(d, w, gc, view.meterRect(), rgb(243, 243, 243));
+        drawRect(d, w, gc, view.tempoRect(), rgb(243, 243, 243));
+        drawRect(d, w, gc, view.titleRect(), rgb(243, 243, 243));
+        drawRect(d, w, gc, view.composerRect(), rgb(243, 243, 243));
+        drawText(d, w, gc, view.keySignatureRect().x + 12, view.keySignatureRect().y + 24, rgb(26, 26, 26), view.keySignature());
+        drawText(d, w, gc, view.meterRect().x + 12, view.meterRect().y + 24, rgb(26, 26, 26), view.meter());
+        drawText(d, w, gc, view.tempoRect().x + 12, view.tempoRect().y + 24, rgb(26, 26, 26), std::to_string(view.bpm()) + " BPM");
+        drawText(d, w, gc, view.titleRect().x + 12, view.titleRect().y + 24, rgb(26, 26, 26), view.title());
+        drawText(d, w, gc, view.composerRect().x + 12, view.composerRect().y + 24, rgb(26, 26, 26), view.composer());
+    }
+
+    drawRect(d, w, gc, view.compatibilityToggleRect(), view.compatibilityMode() ? rgb(37, 99, 235) : rgb(243, 243, 243));
+    drawRect(d, w, gc, view.livePreviewToggleRect(), view.livePreviewEnabled() ? rgb(37, 99, 235) : rgb(243, 243, 243));
+    drawText(d, w, gc, view.compatibilityToggleRect().x + 32, view.compatibilityToggleRect().y + 14, rgb(26, 26, 26), "Modo Compatibilidade");
+    drawText(d, w, gc, view.livePreviewToggleRect().x + 32, view.livePreviewToggleRect().y + 14, rgb(26, 26, 26), "Preview ao vivo");
+
+    drawRect(d, w, gc, view.assistantBackRect(), rgb(243, 243, 243));
+    drawRect(d, w, gc, view.assistantNextRect(), rgb(37, 99, 235));
+    drawText(d, w, gc, view.assistantBackRect().x + 30, view.assistantBackRect().y + 22, rgb(26, 26, 26), "Voltar");
+    drawText(d, w, gc, view.assistantNextRect().x + 30, view.assistantNextRect().y + 22, rgb(245, 245, 245), "Proximo");
+}
+
+void drawUi(Display* d, Window w, GC gc, const notascore::ui::MainWindow& view) {
+    drawMainHome(d, w, gc, view);
+    if (view.wizardOpen()) {
+        drawWizardPanel(d, w, gc, view);
+    }
+    drawText(d, w, gc, 20, view.height() - 20, rgb(80, 80, 80), "Status: " + view.statusText());
 }
 
 } // namespace
@@ -220,7 +371,7 @@ int NativeWindow::run() {
         static_cast<unsigned int>(m_view.height()),
         0,
         BlackPixel(display, screen),
-        rgb(43, 45, 50));
+        rgb(243, 243, 243));
 
     XSelectInput(display, window, ExposureMask | KeyPressMask | ButtonPressMask | StructureNotifyMask);
     XStoreName(display, window, "NotaScore");

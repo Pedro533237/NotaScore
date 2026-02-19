@@ -1,19 +1,50 @@
 # NotaScore
 
-NotaScore é um editor de notação musical em **C++20**, desenhado para funcionar em hardware antigo com foco em execução por CPU e baixo consumo de RAM.
+NotaScore é um editor de notação musical em **C++20** focado em:
 
-## O que já funciona agora
+- alto desempenho em CPU
+- baixo consumo de memória
+- compatibilidade com hardware antigo (Intel HD integrada)
 
-- App desktop real com janela nativa:
-  - **Windows (Win32/GDI)**: abre como app gráfico (sem console).
-  - **Linux/X11**: abre janela nativa.
-- Tela inicial no estilo dashboard (top bar, sidebar, área de scores, busca e barra inferior).
-- Card **New score** clicável: ao clicar, cria uma nova partitura no estado da UI e atualiza o status.
-- Núcleo de performance:
-  - Thread pool e scheduler por prioridade.
-  - Perfil de hardware para modo CPU-first.
-  - Base de render incremental/dirty regions.
-  - Formato inicial `.nsx` (`NSX1`).
+## Interface profissional (estilo moderno Windows 11)
+
+A interface atual foi estruturada para ser leve e usável:
+
+- janela nativa real em **Windows (Win32/GDI)** e **Linux/X11**
+- layout clean com:
+  - Top Bar: `Arquivo`, `Editar`, `Preferencias`, `Ajuda`
+  - painel lateral Home
+  - cartão principal **Nova Partitura**
+  - ações: `Abrir Projeto`, `Importar MIDI`, `Importar MusicXML`
+  - seção de projetos recentes
+- visual leve inspirado em Windows 11:
+  - fundo claro `#F3F3F3`
+  - painéis brancos
+  - destaque azul `#2563EB`
+  - bordas suaves/rounded no backend Win32
+
+## Fluxo de criação de partitura
+
+Clique em **Nova Partitura** para abrir assistente lateral leve (sem abrir nova janela pesada):
+
+1. **Seleção de Instrumentos**
+   - biblioteca com botões `+`
+   - lista de instrumentos selecionados com remoção (`x`)
+2. **Configurações da Partitura**
+   - armadura
+   - compasso
+   - andamento (BPM)
+   - título
+   - compositor
+
+### Modo Performance / Compatibilidade
+
+No assistente:
+
+- toggle `Modo Compatibilidade`
+  - desativa animações/sombras/smooth zoom
+- toggle `Preview ao vivo`
+  - permite desligar preview em máquinas fracas
 
 ## Build local
 
@@ -26,8 +57,6 @@ ctest --test-dir build --output-on-failure
 ./build/NotaScore
 ```
 
-> No Linux com ambiente gráfico/X11, o app abre uma janela nativa da interface.
-
 ### Windows (MSVC)
 
 ```powershell
@@ -36,14 +65,14 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Artefato alvo: `NotaScore.exe` (subsystem GUI, com `WinMain` dedicado).
+Artefato alvo: `NotaScore.exe` (GUI subsystem com `WinMain`).
 
-## CI / Artefatos (.exe + pacote Linux)
+## CI / Artefatos
 
 Workflow: `.github/workflows/build.yml`
 
-- Linux: build + testes + upload de `NotaScore` e `AppDir`.
-- Windows: build + testes + upload de `NotaScore.exe`.
+- Linux: upload de `NotaScore` e `AppDir`
+- Windows: upload de `NotaScore.exe`
 
 ## AppImage local
 
@@ -51,5 +80,5 @@ Workflow: `.github/workflows/build.yml`
 ./packaging/linux/build_appimage.sh
 ```
 
-- Se `appimagetool` existir, gera `NotaScore-x86_64.AppImage`.
-- Se não existir, deixa `AppDir/` pronto para você empacotar.
+- gera `NotaScore-x86_64.AppImage` quando `appimagetool` está presente
+- caso contrário, gera `AppDir/` pronto para empacotar
