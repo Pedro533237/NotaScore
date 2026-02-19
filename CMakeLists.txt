@@ -66,6 +66,17 @@ if(NOTASCORE_ENABLE_QT)
     find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
     # WebEngineWidgets is optional (heavy). Try to find it, but continue if missing.
     find_package(Qt6 QUIET COMPONENTS WebEngineWidgets)
+
+    # Ensure AUTOMOC / AUTOUIC are enabled for this target so Q_OBJECT classes are moc'ed
+    set_target_properties(notascore_engine PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
+
+    # Explicitly add Qt headers with Q_OBJECT to the target sources so automoc picks them up
+    target_sources(notascore_engine PRIVATE
+        include/notascore/ui/ModernWidgets.hpp
+        include/notascore/ui/PreviewWidget.hpp
+        include/notascore/ui/QtMainWindow.hpp
+    )
+
     target_link_libraries(notascore_engine PUBLIC Qt6::Widgets Qt6::OpenGLWidgets)
     if(TARGET Qt6::WebEngineWidgets)
         target_link_libraries(notascore_engine PUBLIC Qt6::WebEngineWidgets)

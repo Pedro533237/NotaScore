@@ -10,6 +10,12 @@
 
 namespace notascore::ui {
 
+// Helper: convert internal Color -> QColor without exposing Qt in public headers
+static inline QColor toQColor(const Color &c) {
+    return QColor(c.r, c.g, c.b, c.a);
+}
+
+
 // ============================================================================
 // ModernCard Implementation
 // ============================================================================
@@ -67,10 +73,10 @@ void ModernCard::drawBackground(QPainter& painter, const QRect& bounds) {
     path.addRoundedRect(bounds.adjusted(0, 0, -1, -1), 
                        Theme::CornerRadius, Theme::CornerRadius);
     
-    QColor bgColor = m_isHovered ? g_theme.hoverOverlay : g_theme.panelBackground;
+    QColor bgColor = m_isHovered ? toQColor(g_theme.hoverOverlay) : toQColor(g_theme.panelBackground);
     painter.fillPath(path, bgColor);
     
-    painter.strokePath(path, QPen(g_theme.divider, 1));
+    painter.strokePath(path, QPen(toQColor(g_theme.divider), 1));
 }
 
 void ModernCard::drawContent(QPainter& painter, const QRect& bounds) {
@@ -83,9 +89,9 @@ void ModernCard::drawContent(QPainter& painter, const QRect& bounds) {
     // Draw title
     QFont titleFont;
     titleFont.setPointSize(14);
-    titleFont.setWeight(QFont::SemiBold);
+    titleFont.setWeight(QFont::DemiBold);
     painter.setFont(titleFont);
-    painter.setPen(g_theme.textPrimary);
+    painter.setPen(toQColor(g_theme.textPrimary));
     
     QRect titleRect(bounds.left() + 20, bounds.top() + 100, bounds.width() - 40, 30);
     painter.drawText(titleRect, Qt::AlignLeft | Qt::AlignVCenter, m_title);
@@ -95,7 +101,7 @@ void ModernCard::drawContent(QPainter& painter, const QRect& bounds) {
         QFont subtitleFont;
         subtitleFont.setPointSize(10);
         painter.setFont(subtitleFont);
-        painter.setPen(g_theme.textSecondary);
+        painter.setPen(toQColor(g_theme.textSecondary));
         
         QRect subtitleRect(bounds.left() + 20, bounds.top() + 130, bounds.width() - 40, 20);
         painter.drawText(subtitleRect, Qt::AlignLeft | Qt::AlignVCenter, m_subtitle);
@@ -171,13 +177,13 @@ void ModernButton::paintEvent(QPaintEvent* event) {
             borderColor = bgColor;
         }
     } else if (m_style == Style::Secondary) {
-        bgColor = m_isHovered ? g_theme.hoverOverlay : Qt::transparent;
-        textColor = m_enabled ? g_theme.accentColor : g_theme.textSecondary;
-        borderColor = m_isHovered ? g_theme.accentColor : g_theme.divider;
+        bgColor = m_isHovered ? toQColor(g_theme.hoverOverlay) : QColor(Qt::transparent);
+        textColor = m_enabled ? toQColor(g_theme.accentColor) : toQColor(g_theme.textSecondary);
+        borderColor = m_isHovered ? toQColor(g_theme.accentColor) : toQColor(g_theme.divider);
     } else { // Subtle
-        bgColor = Qt::transparent;
-        textColor = m_enabled ? g_theme.textPrimary : g_theme.textSecondary;
-        borderColor = Qt::transparent;
+        bgColor = QColor(Qt::transparent);
+        textColor = m_enabled ? toQColor(g_theme.textPrimary) : toQColor(g_theme.textSecondary);
+        borderColor = QColor(Qt::transparent);
     }
 
     // Draw background
@@ -275,7 +281,7 @@ void ModernLineEdit::paintEvent(QPaintEvent* event) {
         labelFont.setPointSize(11);
         labelFont.setWeight(QFont::Medium);
         painter.setFont(labelFont);
-        painter.setPen(g_theme.textPrimary);
+        painter.setPen(toQColor(g_theme.textPrimary));
         painter.drawText(QRect(0, 0, width(), 16), Qt::AlignLeft, m_label);
     }
 
@@ -284,9 +290,9 @@ void ModernLineEdit::paintEvent(QPaintEvent* event) {
     QPainterPath path;
     path.addRoundedRect(inputRect, 6, 6);
     
-    painter.fillPath(path, g_theme.panelBackground);
+    painter.fillPath(path, toQColor(g_theme.panelBackground));
     
-    QColor borderColor = m_focused ? g_theme.accentColor : g_theme.divider;
+    QColor borderColor = m_focused ? toQColor(g_theme.accentColor) : toQColor(g_theme.divider);
     int borderWidth = m_focused ? 2 : 1;
     painter.strokePath(path, QPen(borderColor, borderWidth));
 
@@ -294,11 +300,11 @@ void ModernLineEdit::paintEvent(QPaintEvent* event) {
     QFont textFont;
     textFont.setPointSize(11);
     painter.setFont(textFont);
-    painter.setPen(g_theme.textPrimary);
+    painter.setPen(toQColor(g_theme.textPrimary));
     
     QString displayText = m_text.isEmpty() ? m_placeholder : m_text;
     if (displayText == m_placeholder) {
-        painter.setPen(g_theme.textSecondary);
+        painter.setPen(toQColor(g_theme.textSecondary));
     }
     
     painter.drawText(inputRect.adjusted(8, 0, -8, 0), Qt::AlignVCenter, displayText);
@@ -325,11 +331,14 @@ void ModernLineEdit::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Backspace && !m_text.isEmpty()) {
         m_text.chop(1);
         emit textChanged(m_text);
-    } else if (event->text().isPrint()) {
-        m_text += event->text();
-        emit textChanged(m_text);
     } else if (event->key() == Qt::Key_Return) {
         emit returnPressed();
+    } else {
+        QString t = event->text();
+        if (!t.isEmpty() && t.at(0).isPrint()) {
+            m_text += t;
+            emit textChanged(m_text);
+        }
     }
     update();
 }
@@ -376,19 +385,19 @@ void ModernSlider::paintEvent(QPaintEvent* event) {
         labelFont.setPointSize(11);
         labelFont.setWeight(QFont::Medium);
         painter.setFont(labelFont);
-        painter.setPen(g_theme.textPrimary);
+        painter.setPen(toQColor(g_theme.textPrimary));
         painter.drawText(QRect(0, 0, width(), 20), Qt::AlignLeft, m_label);
     }
 
     // Draw track
     QRect trackRect(10, 24, width() - 20, 4);
-    painter.fillRect(trackRect, g_theme.divider);
+    painter.fillRect(trackRect, toQColor(g_theme.divider));
 
     // Draw filled portion
     if (m_max > m_min) {
         int filledWidth = (width() - 20) * (m_value - m_min) / (m_max - m_min);
         QRect filledRect(10, 24, filledWidth, 4);
-        painter.fillRect(filledRect, g_theme.accentColor);
+        painter.fillRect(filledRect, toQColor(g_theme.accentColor));
     }
 
     // Draw handle
@@ -396,7 +405,7 @@ void ModernSlider::paintEvent(QPaintEvent* event) {
         int handleX = 10 + (width() - 20) * (m_value - m_min) / (m_max - m_min) - 8;
         QRect handleRect(handleX, 16, 16, 20);
         
-        painter.fillRect(handleRect, g_theme.accentColor);
+        painter.fillRect(handleRect, toQColor(g_theme.accentColor));
         painter.drawRoundedRect(handleRect, 4, 4);
     }
 
@@ -404,7 +413,7 @@ void ModernSlider::paintEvent(QPaintEvent* event) {
     QFont valueFont;
     valueFont.setPointSize(10);
     painter.setFont(valueFont);
-    painter.setPen(g_theme.textSecondary);
+    painter.setPen(toQColor(g_theme.textSecondary));
     painter.drawText(QRect(width() - 30, 24, 30, 20), Qt::AlignRight | Qt::AlignVCenter, 
                     QString::number(m_value));
 }
@@ -452,18 +461,18 @@ void PerformanceToggle::paintEvent(QPaintEvent* event) {
 
     // Draw background on hover
     if (m_hovered) {
-        painter.fillRect(bounds, g_theme.hoverOverlay);
+        painter.fillRect(bounds, toQColor(g_theme.hoverOverlay));
     }
 
     // Draw checkbox
     QRect checkboxRect(10, bounds.center().y() - 10, 20, 20);
     painter.drawRoundedRect(checkboxRect, 4, 4);
     
-    QColor borderColor = m_checked ? g_theme.accentColor : g_theme.divider;
+    QColor borderColor = m_checked ? toQColor(g_theme.accentColor) : toQColor(g_theme.divider);
     painter.strokePath(QPainterPath(), QPen(borderColor, 1));
 
     if (m_checked) {
-        painter.fillRect(checkboxRect, g_theme.accentColor);
+        painter.fillRect(checkboxRect, toQColor(g_theme.accentColor));
         // Draw checkmark
         painter.setPen(QPen(Qt::white, 2));
         painter.drawLine(checkboxRect.left() + 5, checkboxRect.center().y(),
@@ -477,7 +486,7 @@ void PerformanceToggle::paintEvent(QPaintEvent* event) {
     labelFont.setPointSize(11);
     labelFont.setWeight(QFont::Medium);
     painter.setFont(labelFont);
-    painter.setPen(g_theme.textPrimary);
+    painter.setPen(toQColor(g_theme.textPrimary));
     
     QRect labelRect(40, bounds.top(), bounds.width() - 50, bounds.height());
     painter.drawText(labelRect, Qt::AlignLeft | Qt::AlignVCenter, m_label);
@@ -487,7 +496,7 @@ void PerformanceToggle::paintEvent(QPaintEvent* event) {
         QFont descFont;
         descFont.setPointSize(9);
         painter.setFont(descFont);
-        painter.setPen(g_theme.textSecondary);
+        painter.setPen(toQColor(g_theme.textSecondary));
         
         QRect descRect(40, bounds.center().y() + 4, bounds.width() - 50, 14);
         painter.drawText(descRect, Qt::AlignLeft | Qt::AlignTop, m_description);

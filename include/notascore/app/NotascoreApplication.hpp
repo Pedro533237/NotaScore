@@ -37,7 +37,7 @@ public:
     [[nodiscard]] ui::ThemeMode currentTheme() const { return ui::g_theme.mode; }
 
     // Gerenciamento de performance
-    void setPerformanceMode(core::PerformanceProfile::Mode mode);
+    void setPerformanceMode(core::ExecutionMode mode);
     void autodetectPerformanceMode();
     
     // Gerenciamento de documentos

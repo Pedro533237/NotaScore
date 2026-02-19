@@ -15,6 +15,12 @@
 #include <QIcon>
 #include <QPixmap>
 #include <QPainter>
+#include <QMenuBar>
+
+// Local helper to convert Theme::Color -> QColor
+static inline QColor toQColor(const notascore::ui::Color &c) {
+    return QColor(c.r, c.g, c.b, c.a);
+}
 
 namespace notascore::ui {
 
@@ -25,7 +31,7 @@ static QIcon createNoteIcon() {
     
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(QPen(g_theme.accentColor, 2));
+    painter.setPen(QPen(toQColor(g_theme.accentColor), 2));
     
     // Simple note head and stem
     painter.drawEllipse(4, 18, 8, 8);

@@ -7,6 +7,7 @@
 #include "notascore/ui/PreviewWidget.hpp"
 
 #include <QMainWindow>
+#include <QListWidget>
 
 namespace notascore::ui {
 

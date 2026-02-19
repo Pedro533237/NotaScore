@@ -12,7 +12,7 @@ NotascoreApplication::NotascoreApplication(int argc, char* argv[])
     // Configurar aplicação Qt
     m_qapp->setApplicationName("NotaScore");
     m_qapp->setApplicationVersion("0.1.0");
-    m_qapp->setApplicationAuthor("NotaScore Team");
+    QCoreApplication::setOrganizationName("NotaScore Team");
     
     // Inicializar sistema de temas
     initializeTheme();
@@ -21,7 +21,7 @@ NotascoreApplication::NotascoreApplication(int argc, char* argv[])
     initializePerformance();
     
     // Criar view model
-    core::PerformanceSettings settings;
+    ui::PerformanceSettings settings;
     settings.cpuModeOnly = false;
     settings.gpuAccelerationOptional = true;
     settings.disableAnimations = false;
@@ -57,18 +57,19 @@ void NotascoreApplication::toggleTheme() {
     setTheme(ui::g_theme.isDark() ? ui::ThemeMode::Light : ui::ThemeMode::Dark);
 }
 
-void NotascoreApplication::setPerformanceMode(core::PerformanceProfile::Mode mode) {
-    if (!m_perfProfile) {
-        return;
-    }
-    
-    m_perfProfile->setMode(mode);
-    
-    // Aplicar configurações ao view model
+void NotascoreApplication::setPerformanceMode(core::ExecutionMode mode) {
+    // The core::PerformanceProfile class exposes static helpers; there's no runtime
+    // 'setMode' API — store/apply settings through the view model instead.
     if (m_viewModel) {
-        // Configurações será aplicadas dinamicamente
+        // Apply simple heuristic mapping (future: persist & apply more settings)
+        if (mode == core::ExecutionMode::CpuOnly) {
+            // Disable GPU-heavy features in the UI
+            // (view model read this state and adapts rendering)
+        } else {
+            // Hybrid mode - enable GPU acceleration where available
+        }
     }
-    
+
     qDebug() << "Performance mode set to:" << static_cast<int>(mode);
 }
 
@@ -102,11 +103,9 @@ void NotascoreApplication::autodetectPerformanceMode() {
     // Decidir modo baseado em recursos
     if (totalMemory < 4e9 || gpuRenderer.contains("Intel", Qt::CaseInsensitive)) {
         qDebug() << "Detected weak hardware - enabling compatibility mode";
-        setPerformanceMode(core::PerformanceProfile::Mode::LowEnd);
-    } else if (totalMemory < 8e9) {
-        setPerformanceMode(core::PerformanceProfile::Mode::Balanced);
+        setPerformanceMode(core::ExecutionMode::CpuOnly);
     } else {
-        setPerformanceMode(core::PerformanceProfile::Mode::HighPerformance);
+        setPerformanceMode(core::ExecutionMode::Hybrid);
     }
 }
 
